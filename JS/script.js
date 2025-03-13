@@ -4,6 +4,7 @@ let currentstaus
 let newsongsd
 let cuurfolder
 let songsd
+let i
 
 
 
@@ -12,7 +13,7 @@ async function getsongs(folder) {
     //getsongs from url
     cuurfolder = folder;
 
-    let song = await fetch(`/${cuurfolder}/`)
+    let song = await fetch(`${cuurfolder}/`)
     let responce = await song.text()
     let div = document.createElement("div")
     div.innerHTML = responce;
@@ -23,20 +24,18 @@ async function getsongs(folder) {
     for (i = 0; i < as.length; i++) {
         let b = as[i]
         if (b.title.endsWith(".mp3")) {
-            songs.push(`/${cuurfolder}/` + b.title)
+            songs.push(`${cuurfolder}/` + b.title)
         }
 
     }
-    return songs
+    return songs;
 
 
 }
 
 const playmusic = (track) => {
 
-    // let audio = new Audio("http://127.0.0.1:5500/Songs/" + track)
-
-    currentsong.src = `/${cuurfolder}/` + track
+    currentsong.src = `${cuurfolder}/` + track
 
     document.querySelector(".songinfo").innerHTML = `<div class="songname"><marquee behavior="" direction="right">${track.split("/").slice(-1)[0]}</marquee></div>`
     document.querySelector(".time").innerHTML = `00:00`
@@ -45,6 +44,8 @@ const playmusic = (track) => {
 
     playbtn.src = "Svg/pause.svg"
 
+
+
 }
 const songlist = () => {
     let songul = document.querySelector(".songlist").getElementsByTagName("ul")[0]
@@ -52,7 +53,7 @@ const songlist = () => {
 
 
     for (const i of songsd) {
-        songul.innerHTML = songul.innerHTML + `<li><img class="" src="Svg/music.svg">${i.split(`/${cuurfolder}/`)[1]}<li>`
+        songul.innerHTML = songul.innerHTML + `<li><img class="" src="Svg/music.svg">${i.split(`${cuurfolder}/`)[1]}<li>`
 
     }
 
@@ -77,30 +78,43 @@ const Timeupdate = () => {
 const prevoiussong = () => {
     //play prevoius song
 
-    let currentsong1 = currentsong.attributes.src
 
-    let index = songsd.indexOf(currentsong1.nodeValue)
-    if (index >= 0) {
-        playmusic(songsd[index - 1])
+    let so = []
+    let currentsong1 = currentsong.attributes.src.value
+    for (const i of songsd) {
+        so.push(i.split("/").slice(-1)[0])
     }
-    else {
-        alert("Last index song")
+
+    let index = so.indexOf(currentsong1.split("/").slice(-1)[0])
+
+    try {
+        if (index >= 0) {
+            playmusic(so[index - 1])
+        }
+    } catch (error) {
+        alert("End of songlist")
     }
 
 
 }
 const nextsong = () => {
     //play next song
-
-    let currentsong1 = currentsong.attributes.src
-
-    let index = songsd.indexOf(currentsong1.nodeValue)
-
-    if (index <= songsd.length) {
-        playmusic(songsd[index + 1])
-    } else {
-        alert("End index song")
+    let so = []
+    let currentsong1 = currentsong.attributes.src.value
+    for (const i of songsd) {
+        so.push(i.split("/").slice(-1)[0])
     }
+
+    let index = so.indexOf(currentsong1.split("/").slice(-1)[0])
+
+    try {
+        if (index <= so.length) {
+            playmusic(so[index + 1])
+        }
+    } catch (error) {
+        alert("End of songlist")
+    }
+
 }
 const hamburger = () => {
     //hamburger use
@@ -116,7 +130,11 @@ const load_list = () => {
     document.querySelectorAll(".card").forEach(element => {
         element.addEventListener('click', async iteam => {
 
-            songsd = await getsongs(`Songs/${iteam.currentTarget.dataset.folder}`)
+            
+
+
+            songsd = await getsongs(`Songs/${iteam.currentTarget.dataset.folder}`);
+
             // songlist
             songlist();
 
@@ -127,33 +145,45 @@ const load_list = () => {
 
                         playmusic(e.textContent)
 
+
                     }
 
+
                 })
+
+
+
+
 
             })
 
         })
 
 
+
     });
 
 }
 async function displayallAlbums() {
-    let song = await fetch(`/Songs/`)
-    let responce = await song.text()
-    let div = document.createElement("div")
+    let song = await fetch(`Songs/`);
+
+    let responce = await song.text();
+
+    let div = document.createElement("div");
     div.innerHTML = responce;
     let as = div.getElementsByTagName("a")
     let cardcontainer = document.querySelector(".cardcontainer")
 
+
     Array.from(as).forEach(async element => {
         if (element.href.includes("/Songs/")) {
-            let folder = element.href.split("/").slice(-2)[0]
+            let folder = element.href.split("/").slice(-2)[1]
 
             //   get the metadata
-            let a = await fetch(`/Songs/${folder}/info.json`)
+            let a = await fetch(`Songs/${folder}/info.json`)
+
             let responce = await a.json();
+
 
             cardcontainer.innerHTML = cardcontainer.innerHTML + `<div  data-folder="${folder}" class="card">
             <div class="play invert">
@@ -165,9 +195,6 @@ async function displayallAlbums() {
             </div>`
         }
         load_list();
-
-
-
     });
 
 
@@ -228,9 +255,9 @@ async function main() {
     //mute volume 
     document.querySelector(".volumebtn").addEventListener("click", (e) => {
         currentsong.volume = 0
-        document.querySelector(".range").value=0
-    
-        
+        document.querySelector(".range").value = 0
+
+
     })
 
 
